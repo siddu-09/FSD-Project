@@ -1,4 +1,4 @@
-# � BookStore - Project Master Plan
+# 📚 BookStore - Project Master Plan
 
 **Project Goal**: A high-performance, full-stack ecommerce application specifically designed for selling books, focusing on a vast catalog, searchability, and a cozy user experience.
 **Philosophy**: "Discover your next great read."
@@ -17,6 +17,7 @@
 - **Runtime**: Node.js.
 - **Framework**: Express.js.
 - **Image Handling**: Cloudinary (for book covers).
+- **Architecture**: Layered Architecture (Controller-Service-Repository).
 
 ### 3. Database & Data Layer
 - **Database**: PostgreSQL.
@@ -27,6 +28,25 @@
 - **Strategy**: JWT.
 - **Flow**: Login -> accessToken. RBAC for Admin.
 - **Passwords**: bcryptjs.
+
+---
+
+## 🛠️ Backend Architecture and Standards
+
+To ensure scalability and maintainability, the backend will strictly follow **Object-Oriented Programming (OOP)** principles and a **Clean Architecture** pattern.
+
+### Layered Structure
+1.  **Controllers** (`/controllers`): Handle HTTP requests, validation, and sending responses. NO business logic here.
+2.  **Services** (`/services`): Contain all business logic. They orchestrate data flow and ensure rules are followed.
+3.  **Repositories** (`/repositories`): Handle direct database interactions (via Prisma). This abstraction allows swapping the DB layer if needed.
+4.  **Models/Entities** (`/models`): Define the data structures and domain objects.
+5.  **Utils/Helpers** (`/utils`): Shared utilities like Error Handling and Formatters.
+
+### Design Patterns
+-   **Dependency Injection** (where applicable): Passing services to controllers.
+-   **Singleton**: For Database instances.
+-   **Factory**: For creating complex objects (if needed).
+-   **Observer**: For handling events like "Order Placed" -> "Send Email".
 
 ---
 

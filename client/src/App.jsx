@@ -131,28 +131,106 @@ function AuthForm({ type }) {
 
 function Catalog() {
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get(`${API_URL}/books`)
       .then(res => {
-        setBooks(res.data.data.books);
-        setLoading(false);
+        const allBooks = res.data.data.books;
+        const uniqueCategories = [...new Set(allBooks.map(book => book.category).filter(Boolean))].sort();
+        setCategories(uniqueCategories);
       })
       .catch(err => {
-        console.error("Error fetching books:", err);
-        setLoading(false);
+        console.error("Error fetching categories:", err);
       });
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+
+    const timeoutId = setTimeout(() => {
+      const params = {};
+      if (search.trim()) params.search = search.trim();
+      if (selectedCategory) params.category = selectedCategory;
+      if (sortBy !== 'newest') params.sort = sortBy;
+
+      axios.get(`${API_URL}/books`, { params })
+        .then(res => {
+          setBooks(res.data.data.books);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Error fetching books:", err);
+          setLoading(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [search, selectedCategory, sortBy]);
+
+  const clearFilters = () => {
+    setSearch('');
+    setSelectedCategory('');
+    setSortBy('newest');
+  };
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
       <h2 style={{ marginBottom: '2rem', fontSize: '2.5rem' }}>Book Catalog</h2>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title or author"
+          className="input-field"
+          style={{ minWidth: '220px', flex: '2 1 320px' }}
+        />
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="input-field"
+          style={{ minWidth: '180px', flex: '1 1 180px' }}
+        >
+          <option value="">All Categories</option>
+          {categories.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="input-field"
+          style={{ minWidth: '180px', flex: '1 1 180px' }}
+        >
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="title_asc">Title: A-Z</option>
+        </select>
+        <button onClick={clearFilters} className="btn" style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>
+          Clear
+        </button>
+      </div>
+
+      {!loading && (
+        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>
+          Showing {books.length} {books.length === 1 ? 'book' : 'books'}
+        </p>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
         {loading ? (
           <p>Loading catalog...</p>
+        ) : books.length === 0 && (search || selectedCategory) ? (
+          <p>No books match your current filters.</p>
         ) : books.length === 0 ? (
-          <p>The catalog is currently empty. Please run the database seeder!</p>
+          <p>The catalog is currently empty. Please run the database seeder.</p>
         ) : (
           books.map(book => (
             <BookCard 

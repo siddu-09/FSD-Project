@@ -2,21 +2,31 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 class BookRepository {
-  async findAll({ search, category }) {
+  async findAll({ search, category, sort }) {
     const where = {};
     if (search) {
       where.OR = [
-        { title: { contains: search } },
-        { author: { contains: search } }
+        { title: { contains: search, mode: 'insensitive' } },
+        { author: { contains: search, mode: 'insensitive' } }
       ];
     }
-    if (category) {
+
+    if (category && category !== 'all') {
       where.category = category;
     }
+
+    const orderBy =
+      sort === 'price_asc'
+        ? { price: 'asc' }
+        : sort === 'price_desc'
+        ? { price: 'desc' }
+        : sort === 'title_asc'
+        ? { title: 'asc' }
+        : { createdAt: 'desc' };
     
     return await prisma.book.findMany({
       where,
-      orderBy: { createdAt: 'desc' }
+      orderBy
     });
   }
 

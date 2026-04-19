@@ -4,7 +4,8 @@ import axios from 'axios';
 import { AuthContext, AuthProvider } from './context/AuthContext';
 import { CartContext, CartProvider } from './context/CartContext';
 
-const API_URL = 'http://localhost:5001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1600&q=80';
 
 function BookCard({ book }) {
   const { addToCart } = useContext(CartContext);
@@ -42,7 +43,7 @@ function Home() {
       {/* Hero Section */}
       <div style={{ 
         height: '400px', 
-        backgroundImage: 'linear-gradient(to bottom, rgba(43, 43, 43, 0.4), rgba(43, 43, 43, 0.8)), url(/absolute/path/to/hero)',
+        backgroundImage: `linear-gradient(to bottom, rgba(43, 43, 43, 0.4), rgba(43, 43, 43, 0.8)), url(${HERO_IMAGE_URL})`,
         backgroundSize: 'cover', 
         backgroundPosition: 'center',
         display: 'flex',
@@ -51,7 +52,6 @@ function Home() {
         color: '#fff',
         textAlign: 'center'
       }}>
-        <img src="/Users/sidduhamigi/.gemini/antigravity/brain/e501fb5f-f672-4283-b211-d1c5c01a76c0/hero_banner_1776281634863.png" style={{position:'absolute', width: '100%', height: '400px', objectFit: 'cover', zIndex: -1}} alt="Hero" />
         <div style={{ zIndex: 1, padding: '2rem' }}>
           <h1 style={{ fontSize: '3.5rem', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Discover Your Next Great Read</h1>
           <p style={{ fontSize: '1.25rem', marginTop: '1rem', opacity: 0.9 }}>Join our community of book lovers and explore thousands of titles.</p>

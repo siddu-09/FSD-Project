@@ -1,0 +1,33 @@
+version: 1.0
+runtime: nodejs20
+
+build:
+  commands:
+    pre-build:
+      - cd server && npm ci
+    build:
+      - cd server && npx prisma generate
+
+run:
+  runtime-version: 20
+  command: cd server && npm run prisma:migrate:deploy && npm start
+  network:
+    port: 5001
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: production
+    - name: PORT
+      value: "5001"
+    # ----------------------------------------------------------------
+    # Set the following secrets in the App Runner Console UI ONLY.
+    # Do NOT hardcode secrets in this file.
+    # Required:
+    #   DATABASE_URL  — PostgreSQL connection string (RDS endpoint)
+    #   JWT_SECRET    — Long random secret for signing JWTs
+    #   CORS_ORIGIN   — Your Amplify frontend URL
+    # Optional (Cloudinary image uploads):
+    #   CLOUDINARY_CLOUD_NAME
+    #   CLOUDINARY_API_KEY
+    #   CLOUDINARY_API_SECRET
+    # ----------------------------------------------------------------

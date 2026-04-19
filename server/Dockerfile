@@ -1,20 +1,38 @@
-# Use official Node.js LTS image
-FROM node:18
+# ── Build stage ──────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
 
-# Set working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Install dependencies (production only)
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm install
+# Generate Prisma client
+COPY prisma ./prisma
+RUN npx prisma generate
 
-# Copy the rest of the application code
+# Copy the rest of the source
 COPY . .
 
-# Expose port (change if your app uses a different port)
-EXPOSE 3000
+# ── Runtime stage ─────────────────────────────────────────────────────
+FROM node:20-alpine AS runner
 
-# Command to run your app
-CMD ["npm", "start"]
+WORKDIR /app
+
+# Use a non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy built artifacts from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/package.json ./
+
+ENV NODE_ENV=production
+ENV PORT=5001
+
+EXPOSE 5001
+
+USER appuser
+
+CMD ["node", "src/index.js"]
